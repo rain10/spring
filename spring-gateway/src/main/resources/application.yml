@@ -1,0 +1,74 @@
+server:
+  port: 8721
+  
+spring:
+  application: 
+    name: gateway-server
+  boot:
+      admin:
+        client:
+          url: http://localhost:8723
+  cloud: 
+    config: 
+      discovery: 
+        enabled: true
+        service-id: config-server
+      profile: dev
+      label: master
+    gateway:
+       discovery:
+         locator:
+           lowerCaseServiceId: true
+           enabled: true
+       routes:
+       - id: system-server
+         uri: lb://system-server
+         predicates:
+         - Path=/api/system/**
+         filters:
+          - StripPrefix=2
+       - id: authservice
+         uri: lb://auth-server
+         predicates:
+         - Path=/api/auth/**
+         filters:
+          - StripPrefix=2
+#       - id: monitor-admin-server
+#         uri: lb://monitor-admin-server
+#         predicates:
+#         - Path=/instances/**
+#       - id: monitor-hystrix-server
+#         uri: lb://monitor-hystrix-server
+#         predicates:
+#         - Path=/hystrix/**
+       default-filters:
+        - name: Hystrix
+          args:
+            name: fallbackcmd
+            fallbackUri: forward:/fallbackcontroller
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS
+      
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8730/eureka/
+  instance:
+    prefer-ip-address: true
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: debug
+
+
+
