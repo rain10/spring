@@ -15,12 +15,24 @@ spring:
   cloud:
     config:
       server:
-        native:
-          search-locations:
-          - classpath:/config/
-  profiles:
-    active:
-    - native
+        git:
+          uri: https://github.com/rain10/spring/
+          search-paths:
+          - spring-config
+          username: rain1026
+          password: dy18011447905
+          force-pull: true
+  rabbitmq:
+       host: 127.0.0.1
+       port: 5672
+       username: admin
+       password: admin
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
 
 eureka:
   client:
