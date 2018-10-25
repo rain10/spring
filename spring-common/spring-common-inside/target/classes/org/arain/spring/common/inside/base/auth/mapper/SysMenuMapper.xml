@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.arain.spring.common.inside.base.auth.mapper.SysMenuMapper">
+	
+	
+	<select id="selectByUserSerialNoAndPSerialNo" parameterType="java.lang.String" resultType="org.arain.spring.common.inside.base.auth.entity.SysMenu"> 
+		SELECT a.* FROM 
+		sys_menu a,sys_user b,sys_role c,sys_user_role d,sys_role_resource e 
+		WHERE b.serial_no = d.user_serial_no 
+		AND d.role_serial_no = c.serial_no 
+		AND d.state =1 
+		AND c.serial_no = e.role_serial_no 
+		AND e.type = 1 
+		AND e.menu_serial_no = a.serial_no 
+		AND a.state = 1 
+		AND a.p_serial_no = #{pSerialNo}
+		AND b.serial_no = #{userSerialNo}
+		ORDER BY a.sort 
+	</select>
+	
+	<select id="selectByByUserSerialNo" parameterType="java.lang.String" resultType="org.arain.spring.common.inside.base.auth.entity.SysMenu">
+		SELECT b.* FROM 
+		sys_role_resource a,sys_menu b,sys_role c,sys_user_role d 
+		WHERE a.menu_serial_no = b.serial_no 
+		AND a.role_serial_no = d.role_serial_no
+		AND a.state =1 
+		AND  d.user_serial_no =#{userSerialNo}
+	</select>
+	
+	<select id="selectByPSerialNo" parameterType="java.lang.String" resultType="org.arain.spring.common.inside.base.auth.entity.SysMenu">
+		SELECT a.serial_no,a.title FROM sys_menu a WHERE a.p_serial_no = #{serialNo}
+	</select>
+</mapper>

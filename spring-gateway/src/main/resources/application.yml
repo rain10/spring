@@ -8,6 +8,8 @@ spring:
       admin:
         client:
           url: http://localhost:8723
+          instance:
+            service-base-url: http://${spring.cloud.client.ip-address}:${server.port}
   cloud: 
     config: 
       discovery: 
@@ -33,19 +35,11 @@ spring:
          - Path=/api/auth/**
          filters:
           - StripPrefix=2
-#       - id: monitor-admin-server
-#         uri: lb://monitor-admin-server
-#         predicates:
-#         - Path=/instances/**
-#       - id: monitor-hystrix-server
-#         uri: lb://monitor-hystrix-server
-#         predicates:
-#         - Path=/hystrix/**
        default-filters:
         - name: Hystrix
           args:
             name: fallbackcmd
-            fallbackUri: forward:/fallbackcontroller
+            fallbackUri: forward:/fallBackRequest
 
 management:
   endpoints:

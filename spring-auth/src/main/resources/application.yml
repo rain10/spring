@@ -8,6 +8,8 @@ spring:
       admin:
         client:
           url: http://localhost:8723
+          instance:
+            service-base-url: http://${spring.cloud.client.ip-address}:${server.port}
   cloud: 
     config: 
       discovery: 
@@ -15,6 +17,35 @@ spring:
         service-id: config-server
       profile: dev
       label: master
+  datasource:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        druid:
+            initial-size: 10
+            max-active: 100
+            min-idle: 10
+            max-wait: 60000
+            pool-prepared-statements: true
+            max-pool-prepared-statement-per-connection-size: 20
+            time-between-eviction-runs-millis: 60000
+            min-evictable-idle-time-millis: 300000
+            #validation-query: SELECT 1 FROM DUAL
+            test-while-idle: true
+            test-on-borrow: false
+            test-on-return: false
+            stat-view-servlet:
+                enabled: true
+                url-pattern: /druid/*
+                #login-username: admin
+                #login-password: admin
+            filter:
+                stat:
+                    log-slow-sql: true
+                    slow-sql-millis: 1000
+                    merge-sql: false
+                wall:
+                    config:
+                        multi-statement-allow: true
 
 eureka:
   client:
@@ -35,3 +66,6 @@ management:
     health:
       show-details: ALWAYS    
 
+mybatis-plus:
+  mapper-locations: org/arain/**/mapper/*Mapper.xml
+  typeAliasesPackage: org.arain.spring.common.**.entity

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.arain.spring.common.inside.base.auth.mapper.SysElementMapper">
+	
+	<select id="selectByByUserSerialNo" parameterType="java.lang.String" resultType="org.arain.spring.common.inside.base.auth.entity.SysElement">
+		SELECT b.* FROM 
+		sys_role_resource a,sys_element b,sys_role c,sys_user_role d 
+		WHERE a.element_serial_no = b.serial_no 
+		AND a.role_serial_no = d.role_serial_no 
+		AND a.state =1 
+		AND  d.user_serial_no =#{userSerialNo}
+	</select>
+	
+</mapper>

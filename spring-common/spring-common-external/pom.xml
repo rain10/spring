@@ -104,6 +104,11 @@
             <artifactId>guava</artifactId>
             <version>25.1-jre</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bus-amqp</artifactId>
+        </dependency>
 	</dependencies>
 
 <build>

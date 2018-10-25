@@ -10,6 +10,8 @@ spring:
       admin:
         client:
           url: http://localhost:8723
+          instance:
+            service-base-url: http://${spring.cloud.client.ip-address}:${server.port}
   cloud:
     config:
       server:
@@ -29,5 +31,3 @@ eureka:
     health-check-url-path: /actuator/health
     prefer-ip-address: true
     instance-id: ${spring.cloud.client.ip-address}:${server.port}
-  server:
-    enable-self-preservation: false   

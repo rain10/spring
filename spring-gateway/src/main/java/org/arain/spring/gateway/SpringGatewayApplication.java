@@ -6,11 +6,17 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.client.RestTemplate;
-
-@ComponentScan(basePackages = { "org.arain.spring" })
+/**
+ * 
+ * @author arain
+ * @date 2018年10月25日 下午1:50:07
+ */
+@ComponentScan(basePackages = { "org.arain.spring.gateway" })
 @SpringCloudApplication
 @EnableDiscoveryClient
+@PropertySource(value={"classpath:auth.properties"})
 public class SpringGatewayApplication {
 
 	public static void main(String[] args) {
