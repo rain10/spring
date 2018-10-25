@@ -1,3 +1,4 @@
+a: 1
 #spring:
 #    datasource:
 #        type: com.alibaba.druid.pool.DruidDataSource
