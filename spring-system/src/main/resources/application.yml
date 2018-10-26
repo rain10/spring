@@ -8,6 +8,8 @@ spring:
       admin:
         client:
           url: http://localhost:8723
+          instance:
+            service-base-url: http://${spring.cloud.client.ip-address}:${server.port}
   cloud: 
     config: 
       discovery: 
