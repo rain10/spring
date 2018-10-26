@@ -15,17 +15,30 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Arain
  * @date 2018年10月19日 上午11:14:52
  */
-@FeignClient(value="bms-microservice-auth",fallback=AuthServiceImpl.class)
+@FeignClient(value="auth-server",fallback=AuthServiceImpl.class)
 public interface AuthService {
-	
+	/**
+	 * 
+	 * @param token
+	 * @return
+	 */
 	@RequestMapping("/auth/loadJWTInfo")
 	@ResponseBody
 	public Map<String, Object> loadJWTInfo(@RequestParam("token") String token);
 	
+	/**
+	 * 
+	 * @param serialNo
+	 * @return
+	 */
 	@RequestMapping(value="/auth/loadPermissions/{serialNo}")
 	@ResponseBody
 	public List<Map<String, Object>> getPermissionByUserSerialNo(@PathVariable("serialNo") String serialNo);
 	  
+	/**
+	 * 
+	 * @return
+	 */
 	@RequestMapping(value="/auth/loadAllPermissions")
 	@ResponseBody
 	List<Map<String, Object>> getAllPermissionInfo();

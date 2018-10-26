@@ -20,13 +20,13 @@ public class AuthServiceImpl implements AuthService{
 	
 	@Override
 	public Map<String, Object> loadJWTInfo(String token) {
-		LOG.error("{}加载auth-server服务JTWInfo超时，请稍后重试",token);
+		LOG.error("加载auth-server服务JTWInfo超时，请稍后重试{}",token);
 		return null;
 	}
 
 	@Override
 	public List<Map<String, Object>> getPermissionByUserSerialNo(String serialNo) {
-		LOG.error("{}加载auth-server服务用户权限超时，请稍后重试",serialNo);
+		LOG.error("加载auth-server服务用户权限超时，请稍后重试{}",serialNo);
 		return null;
 	}
 
@@ -35,5 +35,4 @@ public class AuthServiceImpl implements AuthService{
 		LOG.error("auth-server服务加载所有权限超时，请稍后重试");
 		return null;
 	}
-
 }

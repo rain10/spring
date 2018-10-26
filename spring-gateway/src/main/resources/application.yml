@@ -64,5 +64,9 @@ logging:
   level:
     org.springframework.cloud.gateway: debug
 
+# 必须配置
+feign:
+  hystrix:
+    enabled: true#开启Feign Hystrix 支持
 
 

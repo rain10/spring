@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.StringUtils;
+import org.arain.spring.common.inside.base.constants.BaseConstants;
 import org.arain.spring.common.inside.result.ResultMap;
 import org.arain.spring.gateway.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class AccessTokenFilter implements GlobalFilter {
 
 	@Value("${auth-anonymous}")
 	private String anonymous;
-	
+
 	@Value("${auth-authenticationInfo}")
 	private String authenticationInfo;
 
@@ -68,27 +69,32 @@ public class AccessTokenFilter implements GlobalFilter {
 				}
 			}
 		}
+		
 		String method = request.getMethod().toString();
 		ServerHttpRequest.Builder mutate = request.mutate();
-        if (isAnonymous(requestUri)) {
-            ServerHttpRequest build = mutate.build();
-            return gatewayFilterChain.filter(serverWebExchange.mutate().request(build).build());
-        }
-        
-        if (isAauthenticationInfo(requestUri)) {
-            ServerHttpRequest build = mutate.build();
-            return gatewayFilterChain.filter(serverWebExchange.mutate().request(build).build());
-        }
-        
+		if (isAnonymous(requestUri)) {
+			ServerHttpRequest build = mutate.build();
+			return gatewayFilterChain.filter(serverWebExchange.mutate().request(build).build());
+		}
+
 		Map<String, Object> object = getJWTUser(request, mutate);
-		if (org.springframework.util.StringUtils.isEmpty(object) || org.springframework.util.StringUtils.isEmpty(object.get("serialNo"))) {
+		if (org.springframework.util.StringUtils.isEmpty(object)
+				|| org.springframework.util.StringUtils.isEmpty(object.get(BaseConstants.SERIALNO))
+				|| org.springframework.util.StringUtils.isEmpty(object.get(BaseConstants.ACCESSTOKEN))) {
 			return getVoidMono(serverWebExchange, ResultMap.build(0, "用户token过期，请重新登录"));
 		}
 
-		String serialNo = (String) object.get("serialNo");
+		if (isAauthenticationInfo(requestUri)) {
+			ServerHttpRequest build = mutate.build();
+			return gatewayFilterChain.filter(serverWebExchange.mutate().request(build).build());
+		}
+
+		String serialNo = (String) object.get(BaseConstants.SERIALNO);
+		String accessToken = (String) object.get(BaseConstants.ACCESSTOKEN);
+		mutate.header(tokenHeader, accessToken);
 		List<Map<String, Object>> allPermissionInfo = getAllPermissionInfo();
 		Map<String, Object> permission = checkMethodAndReturnPermission(allPermissionInfo, method, requestUri);
-		if ((boolean) permission.get("isNotOk")) {
+		if ((boolean) permission.get(BaseConstants.ISNOTOK)) {
 			return getVoidMono(serverWebExchange, ResultMap.build(0, "请求方式错误或访问不存在，请重试"));
 		}
 
@@ -115,9 +121,10 @@ public class AccessTokenFilter implements GlobalFilter {
 		serverWebExchange.getResponse().getHeaders().add("Content-Type", "application/json;charset=UTF-8");
 		return serverWebExchange.getResponse().writeWith(Flux.just(buffer));
 	}
-	
+
 	/**
 	 * 获取登录用户信息
+	 * 
 	 * @param request
 	 * @param ctx
 	 * @return
@@ -141,6 +148,7 @@ public class AccessTokenFilter implements GlobalFilter {
 
 	/**
 	 * 加载所有权限
+	 * 
 	 * @return
 	 */
 	private List<Map<String, Object>> getAllPermissionInfo() {
@@ -150,6 +158,7 @@ public class AccessTokenFilter implements GlobalFilter {
 
 	/**
 	 * 加载用户权限
+	 * 
 	 * @param serialNo
 	 * @return
 	 */
@@ -160,6 +169,7 @@ public class AccessTokenFilter implements GlobalFilter {
 
 	/**
 	 * 检查请求方法是否有效并返回有效权限
+	 * 
 	 * @param allPermissionInfo
 	 * @param method
 	 * @param requestUri
@@ -168,27 +178,28 @@ public class AccessTokenFilter implements GlobalFilter {
 	private Map<String, Object> checkMethodAndReturnPermission(List<Map<String, Object>> allPermissionInfo,
 			String method, String requestUri) {
 		Map<String, Object> permission = new HashMap<>();
-		permission.put("url", requestUri);
+		permission.put(BaseConstants.URL, requestUri);
 		for (Map<String, Object> map : allPermissionInfo) {
-			if (requestUri.equals(map.get("url"))) {
-				permission.put("code", map.get("code"));
-				if (!org.springframework.util.StringUtils.isEmpty(map.get("method"))) {
-					if (method.equals(map.get("method"))) {
-						permission.put("isNotOk", false);
+			if (requestUri.equals(map.get(BaseConstants.URL))) {
+				permission.put(BaseConstants.CODE, map.get(BaseConstants.CODE));
+				if (!org.springframework.util.StringUtils.isEmpty(map.get(BaseConstants.METHOD))) {
+					if (method.equals(map.get(BaseConstants.METHOD))) {
+						permission.put(BaseConstants.ISNOTOK, false);
 						return permission;
 					}
 				} else {
-					permission.put("isNotOk", false);
+					permission.put(BaseConstants.ISNOTOK, false);
 					return permission;
 				}
 			}
 		}
-		permission.put("isNotOk", true);
+		permission.put(BaseConstants.ISNOTOK, true);
 		return permission;
 	}
 
 	/**
 	 * 检查权限
+	 * 
 	 * @param permission
 	 * @param user
 	 * @return
@@ -197,14 +208,14 @@ public class AccessTokenFilter implements GlobalFilter {
 		boolean anyMatch = user.parallelStream().anyMatch(new Predicate<Map<String, Object>>() {
 			@Override
 			public boolean test(Map<String, Object> permissionInfo) {
-				return permissionInfo.get("code").equals(permission.get("code"));
+				return permissionInfo.get(BaseConstants.CODE).equals(permission.get(BaseConstants.CODE));
 			}
 		});
 		return anyMatch;
 	}
 
 	/**
-	 *匿名登录排除
+	 * 匿名登录排除
 	 *
 	 * @param requestUri
 	 * @return
@@ -212,23 +223,23 @@ public class AccessTokenFilter implements GlobalFilter {
 	private boolean isAnonymous(String requestUri) {
 		boolean flag = false;
 		for (String s : anonymous.split(",")) {
-			if(s.indexOf("**") != -1) {
+			if (s.indexOf("**") != -1) {
 				int i = s.indexOf("**");
-				String url = s.substring(0,i);
-				if(requestUri.startsWith(url)) {
+				String url = s.substring(0, i);
+				if (requestUri.startsWith(url)) {
 					return true;
 				}
-			}else {
-				if(requestUri.equals(s)) {
+			} else {
+				if (requestUri.equals(s)) {
 					return true;
 				}
 			}
 		}
 		return flag;
 	}
-	
+
 	/**
-	 *登录后排除
+	 * 登录后排除
 	 *
 	 * @param requestUri
 	 * @return
@@ -236,14 +247,14 @@ public class AccessTokenFilter implements GlobalFilter {
 	private boolean isAauthenticationInfo(String requestUri) {
 		boolean flag = false;
 		for (String s : authenticationInfo.split(",")) {
-			if(s.indexOf("**") != -1) {
+			if (s.indexOf("**") != -1) {
 				int i = s.indexOf("**");
-				String url = s.substring(0,i);
-				if(requestUri.startsWith(url)) {
+				String url = s.substring(0, i);
+				if (requestUri.startsWith(url)) {
 					return true;
 				}
-			}else {
-				if(requestUri.equals(s)) {
+			} else {
+				if (requestUri.equals(s)) {
 					return true;
 				}
 			}
