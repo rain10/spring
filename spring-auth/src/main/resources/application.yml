@@ -51,6 +51,18 @@ spring:
                 wall:
                     config:
                         multi-statement-allow: true
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+    timeout: 3000
+    password: qwe,./123
 
 eureka:
   client:
@@ -74,3 +86,13 @@ management:
 mybatis-plus:
   mapper-locations: org/arain/**/mapper/*Mapper.xml
   typeAliasesPackage: org.arain.spring.common.**.entity
+
+# 必须配置
+feign:
+  hystrix:
+    enabled: true#开启Feign Hystrix 支持  
+  
+cache:
+  isRedis: true
+  ehcache:
+    name: tokenCache

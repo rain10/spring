@@ -16,6 +16,7 @@ public class TestController {
 	
 	@RequestMapping("bbc")
 	public String port() {
+		System.out.println("--------------------------------------------------------------------------------");
 		return port;
 	}
 }

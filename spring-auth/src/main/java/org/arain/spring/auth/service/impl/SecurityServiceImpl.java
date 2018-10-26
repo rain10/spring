@@ -13,13 +13,17 @@ import org.arain.spring.auth.service.SecurityService;
 import org.arain.spring.auth.service.SysElementService;
 import org.arain.spring.auth.service.SysMenuService;
 import org.arain.spring.auth.service.SysUserService;
+import org.arain.spring.common.external.utils.BaseCache;
 import org.arain.spring.common.inside.base.auth.entity.SysElement;
 import org.arain.spring.common.inside.base.auth.entity.SysMenu;
 import org.arain.spring.common.inside.base.auth.entity.SysUser;
+import org.arain.spring.common.inside.base.constants.BaseConstants;
 import org.arain.spring.common.inside.base.exception.RunException;
 import org.arain.spring.common.inside.base.service.impl.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -44,6 +48,12 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 	@Autowired
 	private SysElementService sysElementService;
 	
+	@Autowired
+	private BaseCache baseCache;
+	
+	@Value("${token-expire}")
+	private int expire;
+	
 	@Override
 	public JSONObject login(SecurityDto dto) {
 		SysUser sysUser = sysUserService.loadOneByUsernameAndPassword(dto.getUsername(), dto.getPassword());
@@ -59,9 +69,10 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 			
 			JSONObject token = new JSONObject();
 			token.put("access_token", accessToken);
-//			token.put("refresh_token", refreshToken);
+			baseCache.set(accessToken, accessToken, expire);
 			return token;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RunException("用户token生成失败，请重新登录");
 		}
 	}
@@ -70,15 +81,15 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 	@Override
 	public SecurityDto loadUserInfo(String token,SecurityDto dto) {
 		try {
-			IJWTInfo info = jwtTokenUtil.getInfoFromToken(token);
-			if(info != null) {
-				dto.setHeadImage(info.getHead());
-				dto.setUsername(info.getUniqueName());
-				dto.setRegion(info.getRegion());
-				dto.setRealname(info.getName());
-				return dto;
-			}
-			throw new RunException("用户信息拉取失败");
+				IJWTInfo info = jwtTokenUtil.getInfoFromToken(token);
+				if(info != null) {
+					dto.setHeadImage(info.getHead());
+					dto.setUsername(info.getUniqueName());
+					dto.setRegion(info.getRegion());
+					dto.setRealname(info.getName());
+					return dto;
+				}
+			throw new RunException("用户token过期或失效，请重新登录");
 		} catch (Exception e) {
 			throw new RunException("用户token过期或失效，请重新登录");
 		}
@@ -104,16 +115,30 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 	@Override
 	public Map<String, Object> loadJWTInfo(String token) {
 		Map<String, Object> map = new HashMap<>();
-		IJWTInfo info = null;
-		try {
-			info = jwtTokenUtil.getInfoFromToken(token);
-		} catch (Exception e) {
-			return null;
+		String newToken = null;
+		Object object = baseCache.get(token);
+		if(!StringUtils.isEmpty(object)) {
+			newToken = (String) object;
+			IJWTInfo info = null;
+			try {
+				info = jwtTokenUtil.getInfoFromToken(newToken);
+				if(info != null) {
+					String accessToken = jwtTokenUtil.generateToken(new JWTInfo(info.getUniqueName()
+							, info.getSerialNo()
+							, info.getName()
+							, info.getHead()
+							, info.getRegion()));
+					
+					baseCache.set(token, accessToken, expire);
+					map.put(BaseConstants.SERIALNO, info.getSerialNo());
+					map.put(BaseConstants.ACCESSTOKEN, accessToken);
+					return map;
+				}
+			} catch (Exception e) {
+				return null;
+			}
 		}
-		if(info != null) {
-			map.put("serialNo", info.getSerialNo());
-		}
-		return map;
+		return null;
 	}
 
 
@@ -123,17 +148,17 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 		List<SysMenu> menuList = sysMenuService.loadSysMenu();
 		for (SysMenu sysMenu : menuList) {
 			Map<String, Object> map = new HashMap<>();
-			map.put("code", sysMenu.getCode());
-			map.put("url", sysMenu.getHref());
-			map.put("method",null);
+			map.put(BaseConstants.CODE, sysMenu.getCode());
+			map.put(BaseConstants.URL, sysMenu.getHref());
+			map.put(BaseConstants.METHOD,null);
 			list.add(map);
 		}
 		List<SysElement> elemantList = sysElementService.loadSysElement();
 		for (SysElement sysElement : elemantList) {
 			Map<String, Object> map = new HashMap<>();
-			map.put("code", sysElement.getCode());
-			map.put("url", sysElement.getUri());
-			map.put("method",sysElement.getMethod());
+			map.put(BaseConstants.CODE, sysElement.getCode());
+			map.put(BaseConstants.URL, sysElement.getUri());
+			map.put(BaseConstants.METHOD,sysElement.getMethod());
 			list.add(map);
 		}
 		return list;
@@ -146,18 +171,18 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 		List<SysMenu> menuList = sysMenuService.loadSysMenuByUserSerialNo(serialNo);
 		for (SysMenu sysMenu : menuList) {
 			Map<String, Object> map = new HashMap<>();
-			map.put("code", sysMenu.getCode());
-			map.put("url", sysMenu.getHref());
-			map.put("method",null);
+			map.put(BaseConstants.CODE, sysMenu.getCode());
+			map.put(BaseConstants.URL, sysMenu.getHref());
+			map.put(BaseConstants.METHOD,null);
 			list.add(map);
 		}
 		
 		List<SysElement> elemantList = sysElementService.loadSysElementByUserSerialNo(serialNo);
 		for (SysElement sysElement : elemantList) {
 			Map<String, Object> map = new HashMap<>();
-			map.put("code", sysElement.getCode());
-			map.put("url", sysElement.getUri());
-			map.put("method",sysElement.getMethod());
+			map.put(BaseConstants.CODE, sysElement.getCode());
+			map.put(BaseConstants.URL, sysElement.getUri());
+			map.put(BaseConstants.METHOD,sysElement.getMethod());
 			list.add(map);
 		}
 		return list;
@@ -166,7 +191,7 @@ public class SecurityServiceImpl extends  BaseServiceImpl<SysUser, String> imple
 
 	@Override
 	public void logout(String token) {
-		
+		baseCache.del(token);
 	}
 
 }

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.PropertySource;
  * @date 2018年10月25日 下午1:25:23
  */
 @SpringCloudApplication
-@ComponentScan(basePackages = {"org.arain.spring.common.inside","org.arain.spring.auth"})
+@ComponentScan(basePackages = {"org.arain.spring.common.inside","org.arain.spring.auth","org.arain.spring.common.external"})
 @EnableDiscoveryClient
 @MapperScan("org.arain.spring.common.inside.base.auth.mapper")
 @PropertySource(value={"classpath:auth.properties"})
