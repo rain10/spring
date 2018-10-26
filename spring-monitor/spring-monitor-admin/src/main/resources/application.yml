@@ -15,6 +15,15 @@ spring:
         service-id: config-server
       profile: dev
       label: master
+  mail:
+    host: smtp.qq.com
+    username: 2530728915@qq.com
+    password: 
+    properties:
+      mail.debug: false  
+      mail.smtp.auth: true  
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
 
 eureka:
   client:
