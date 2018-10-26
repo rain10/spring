@@ -66,6 +66,8 @@ public interface BaseService<T extends BaseEntity, PK extends Serializable> {
      * @return
      */
 	@SuppressWarnings("rawtypes")
-	IPage<T> selectPage(BaseDto queryModel, T t);
+	IPage<T> selectPage(BaseDto queryModel);
+	
+	public int updateBySerialNo(T t);
 
 }

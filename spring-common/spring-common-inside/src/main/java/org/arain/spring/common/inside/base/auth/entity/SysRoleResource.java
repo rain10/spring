@@ -2,7 +2,6 @@ package org.arain.spring.common.inside.base.auth.entity;
 
 import org.arain.spring.common.inside.base.entity.MetaEntity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
@@ -15,7 +14,6 @@ public class SysRoleResource extends MetaEntity{
 	
 	private static final long serialVersionUID = 7352156588275239515L;
 
-	@TableId
 	Long id;
 	
 	String roleSerialNo;

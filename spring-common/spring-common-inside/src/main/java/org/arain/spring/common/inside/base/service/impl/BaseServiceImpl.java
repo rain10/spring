@@ -11,6 +11,8 @@ import org.arain.spring.common.inside.base.entity.BaseEntity;
 import org.arain.spring.common.inside.base.service.BaseService;
 import org.arain.spring.common.inside.base.utils.SerNumUtils;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -75,8 +77,14 @@ public class BaseServiceImpl<T extends BaseEntity, PK extends Serializable> impl
     }
 
 	@Override
-    public IPage<T> selectPage(BaseDto queryModel, T t) {
+    public IPage<T> selectPage(BaseDto queryModel) {
         IPage<T> pages = mapper.selectPage(new Page<>(queryModel.getCurrentPage(), queryModel.getPageSize()), queryModel.getWrapper());
         return pages;
     }
+
+	@Override
+	public int updateBySerialNo(T t) {
+		LambdaUpdateWrapper<T> updateWrapper = new UpdateWrapper<>(t).lambda().eq(T::getSerialNo, t.getSerialNo());
+		return mapper.update(t, updateWrapper);
+	}
 }

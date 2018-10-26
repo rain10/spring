@@ -46,7 +46,7 @@ public class ResultMap implements Serializable{
     }
 
     public ResultMap(Object data) {
-        this.code = 1200;
+        this.code = 1;
         this.msg = "OK";
         this.data = data;
     }

@@ -2,8 +2,6 @@ package org.arain.spring.common.inside.base.auth.entity;
 
 import org.arain.spring.common.inside.base.entity.MetaEntity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
@@ -16,7 +14,6 @@ public class SysUser extends MetaEntity{
 	
 	private static final long serialVersionUID = 7722793095203572718L;
 	
-	@TableId(type=IdType.AUTO)
 	private Long id;
 	
 	private String username;

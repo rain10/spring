@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 
 /**
  * 
@@ -18,7 +19,7 @@ public class BaseEntity implements Serializable {
 	/**
      * 唯一编号
      */
-	@TableField(value = "serial_no")
+	@TableId(value = "serial_no")
     private String serialNo;
     /**
      * 创建时间
